@@ -29,10 +29,17 @@ namespace pulsar {
 
 namespace property {
 
-using variant_type = boost::variant<size_type, string_type>;
+#define PULSAR_VARIANT_BASE_TYPES size_type, string_type
+using variant_type = boost::variant<
+    PULSAR_VARIANT_BASE_TYPES,
+    boost::recursive_wrapper<std::map<string_type, boost::variant<PULSAR_VARIANT_BASE_TYPES>>>
+>;
 
 struct storage {
     struct size_converter : boost::static_visitor<size_type> {
+        string_type operator() (const variant_type&) const
+        { system_fault("can't convert from property map to size type"); }
+
         size_type operator() (const size_type& value_in) const
         { return value_in; }
 
@@ -41,6 +48,9 @@ struct storage {
     };
 
     struct string_converter : boost::static_visitor<string_type> {
+        string_type operator() (const variant_type&) const
+        { system_fault("can't convert from property map to string type"); }
+
         string_type operator() (const size_type& value_in) const
         { return std::to_string(value_in); }
 
