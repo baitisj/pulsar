@@ -15,11 +15,28 @@
 
 #include <pulsar/logging.h>
 #include <pulsar/property.h>
+#include <pulsar/property.new.h>
 #include <pulsar/system.h>
 
 namespace pulsar {
 
 namespace property {
+
+string_type storage::get()
+{
+    return boost::apply_visitor(storage::string_converter(), value);
+}
+
+
+void storage::set(const double& value_in)
+{
+    value = value_in;
+}
+
+void storage::set(const string_type& value_in)
+{
+    value = value_in;
+}
 
 generic::generic(node::base * parent_in, const string_type& name_in, const value_type& type_in)
 : parent(parent_in), name(name_in), type(type_in)

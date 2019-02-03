@@ -23,6 +23,8 @@
 #include <pulsar/node.h>
 #include <pulsar/system.h>
 
+#include <pulsar/property.new.h>
+
 using namespace std;
 using namespace std::chrono_literals;
 
@@ -221,22 +223,31 @@ UNUSED static void process_audio(std::shared_ptr<pulsar::config::file> config_in
     compressor_nodes.push_back(node_map["tail_eater"]);
 }
 
-int main(int argc_in, const char ** argv_in)
+int main(UNUSED int argc_in, UNUSED const char ** argv_in)
 {
+
     if (argc_in != 2) {
         system_fault("must specify a configuration file on the command line");
     }
 
     auto config = pulsar::config::file::make(argv_in[1]);
+    init_logging(config);
 
-    init(config);
+    pulsar::property::storage test;
+    test.set(10);
 
-    log_info("pulsar-dev initialized");
-    log_info("Using Boost ", pulsar::system::get_boost_version());
+    log_info("hmmm: ", test.get());
 
-    process_audio(config);
-    pulsar::system::wait_stopped();
-
-    log_info("done processing audio");
     return 0;
+
+    // init(config);
+
+    // log_info("pulsar-dev initialized");
+    // log_info("Using Boost ", pulsar::system::get_boost_version());
+
+    // process_audio(config);
+    // pulsar::system::wait_stopped();
+
+    // log_info("done processing audio");
+    // return 0;
 }
