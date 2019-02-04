@@ -23,7 +23,7 @@ namespace pulsar {
 
 namespace property {
 
-enum class value_type { unknown, size, integer, real, string, plist, pmap };
+enum class value_type { unknown, null, size, integer, real, string, plist, pmap };
 
 struct generic;
 
@@ -47,8 +47,11 @@ class generic {
     public:
     const string_type name;
     const value_type type = value_type::unknown;
-    generic(node::base * parent_in, const string_type& name_in, const value_type& type_in);
+    generic(node::base * parent_in, const string_type& name_in, const value_type type_in);
     virtual ~generic();
+    operator bool();
+    generic operator[] (const std::size_t index_in);
+    generic operator[] (const string_type& index_in);
     string_type get();
     void set(const double& value_in);
     void set(const string_type& value_in);
@@ -62,8 +65,8 @@ class generic {
     real_type& get_real();
     string_type& get_string();
     void set_string(const string_type& string_in);
-    const plist_type& get_list();
-    const pmap_type& get_map();
+    const plist_type& get_plist();
+    const pmap_type& get_pmap();
 };
 
 } // namespace property
