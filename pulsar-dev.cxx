@@ -163,7 +163,7 @@ UNUSED void log_properties(pulsar::node::base * node_in)
 {
 
     llog_debug({
-        auto& node_name = node_in->get_property("node:name").get_string();
+        auto& node_name = node_in->get_property("node:name")->get_string();
         return pulsar::util::to_string("Properties for node: ", node_name);
     });
 
@@ -223,24 +223,20 @@ UNUSED static void process_audio(std::shared_ptr<pulsar::config::file> config_in
 
 int main(UNUSED int argc_in, UNUSED const char ** argv_in)
 {
-
     if (argc_in != 2) {
         system_fault("must specify a configuration file on the command line");
     }
 
     auto config = pulsar::config::file::make(argv_in[1]);
-    init_logging(config);
 
+    init(config);
+
+    log_info("pulsar-dev initialized");
+    log_info("Using Boost ", pulsar::system::get_boost_version());
+
+    process_audio(config);
+    pulsar::system::wait_stopped();
+
+    log_info("done processing audio");
     return 0;
-
-    // init(config);
-
-    // log_info("pulsar-dev initialized");
-    // log_info("Using Boost ", pulsar::system::get_boost_version());
-
-    // process_audio(config);
-    // pulsar::system::wait_stopped();
-
-    // log_info("done processing audio");
-    // return 0;
 }

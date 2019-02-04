@@ -21,10 +21,14 @@ namespace pulsar {
 
 namespace property {
 
+auto null_property = std::make_shared<generic>(nullptr, "", value_type::null);
+
 generic::generic(node::base * parent_in, const string_type& name_in, const value_type type_in)
 : parent(parent_in), name(name_in), type(type_in)
 {
-    assert(parent != nullptr);
+    if (type_in != value_type::null) {
+        // assert(parent != nullptr);
+    }
 
     switch(type) {
         case value_type::unknown: system_fault("can not specify unknown as a parameter type");
@@ -54,31 +58,7 @@ generic::~generic()
 
 generic::operator bool()
 {
-    return type == value_type::null;
-}
-
-// FIXME copies won't work - how to convert to references?
-generic generic::operator [](const std::size_t index_in)
-{
-    auto list = *value.plist;
-
-    if (index_in >= list.size()) {
-        return generic(nullptr, "", value_type::null);
-    }
-
-    return list[index_in];
-}
-
-// FIXME copies won't work - how to convert to references?
-generic generic::operator [](const string_type& index_in)
-{
-    auto found = value.pmap->find(index_in);
-
-    if (found == value.pmap->end()) {
-        return generic(nullptr, "", value_type::null);
-    }
-
-    return found->second;
+    return type != value_type::null;
 }
 
 string_type generic::get()
@@ -233,13 +213,61 @@ const plist_type& generic::get_plist()
     return *value.plist;
 }
 
-const pmap_type& generic::get_pmap()
+pmap_type& generic::get_pmap()
 {
     if (type != value_type::pmap) {
         system_fault("property is not of type pmap");
     }
 
     return *value.pmap;
+}
+
+std::shared_ptr<generic> generic::lookup(const string_type& key_in)
+{
+    auto& map = get_pmap();
+    auto found = map.find(key_in);
+
+    if (found == map.end()) {
+        return null_property;
+    }
+
+    return found->second;
+}
+
+std::shared_ptr<generic> generic::add(const string_type& name_in, const value_type type_in)
+{
+    auto found = lookup(name_in);
+
+    if (*found) {
+        system_fault("attempt to add duplicate property name: ", name_in);
+    }
+
+    get_pmap().emplace(name_in, std::make_shared<generic>(parent, name_in, type_in));
+
+    return lookup(name_in);
+}
+
+std::shared_ptr<generic> generic::add(const string_type& name_in, std::shared_ptr<generic> property_in)
+{
+    auto found = lookup(name_in);
+
+    if (*found) {
+        system_fault("attempt to add duplicate property name: ", name_in);
+    }
+
+    get_pmap().emplace(name_in, property_in);
+
+    return lookup(name_in);
+}
+
+pmap_type::iterator generic::begin()
+{
+    return get_pmap().begin();
+}
+
+pmap_type::iterator generic::end()
+{
+    return get_pmap().end();
 }
 
 } // namespace parameter
