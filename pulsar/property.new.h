@@ -32,7 +32,7 @@ namespace property {
 #define PULSAR_VARIANT_BASE_TYPES size_type, string_type
 using variant_type = boost::variant<
     PULSAR_VARIANT_BASE_TYPES,
-    boost::recursive_wrapper<std::map<string_type, boost::variant<PULSAR_VARIANT_BASE_TYPES>>>
+    boost::recursive_wrapper<boost::variant<PULSAR_VARIANT_BASE_TYPES>>
 >;
 
 struct storage {
