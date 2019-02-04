@@ -23,8 +23,6 @@
 #include <pulsar/node.h>
 #include <pulsar/system.h>
 
-#include <pulsar/property.new.h>
-
 using namespace std;
 using namespace std::chrono_literals;
 
@@ -232,11 +230,6 @@ int main(UNUSED int argc_in, UNUSED const char ** argv_in)
 
     auto config = pulsar::config::file::make(argv_in[1]);
     init_logging(config);
-
-    pulsar::property::storage test;
-    test.set(10);
-
-    log_info("hmmm: ", test.get());
 
     return 0;
 

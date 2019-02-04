@@ -23,13 +23,20 @@ namespace pulsar {
 
 namespace property {
 
-enum class value_type { unknown, size, integer, real, string };
+enum class value_type { unknown, size, integer, real, string, plist, pmap };
+
+struct generic;
+
+using plist_type = std::vector<generic>;
+using pmap_type = std::map<string_type, generic>;
 
 union value_container {
     size_type size;
     integer_type integer;
     real_type real;
     string_type * string;
+    plist_type * plist;
+    pmap_type * pmap;
 };
 
 class generic {
@@ -55,6 +62,8 @@ class generic {
     real_type& get_real();
     string_type& get_string();
     void set_string(const string_type& string_in);
+    const plist_type& get_list();
+    const pmap_type& get_map();
 };
 
 } // namespace property

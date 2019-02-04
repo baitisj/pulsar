@@ -15,28 +15,11 @@
 
 #include <pulsar/logging.h>
 #include <pulsar/property.h>
-#include <pulsar/property.new.h>
 #include <pulsar/system.h>
 
 namespace pulsar {
 
 namespace property {
-
-string_type storage::get()
-{
-    return boost::apply_visitor(storage::string_converter(), value);
-}
-
-
-void storage::set(const double& value_in)
-{
-    value = value_in;
-}
-
-void storage::set(const string_type& value_in)
-{
-    value = value_in;
-}
 
 generic::generic(node::base * parent_in, const string_type& name_in, const value_type& type_in)
 : parent(parent_in), name(name_in), type(type_in)
@@ -49,14 +32,21 @@ generic::generic(node::base * parent_in, const string_type& name_in, const value
         case value_type::integer: value.integer = 0; break;
         case value_type::real: value.real = 0; break;
         case value_type::string: value.string = new string_type; break;
+        case value_type::plist: value.plist = new plist_type; break;
+        case value_type::pmap: value.pmap = new pmap_type; break;
     }
 }
 
 generic::~generic()
 {
-    if (type == value_type::string && value.string != nullptr) {
-        delete(value.string);
-        value.string = nullptr;
+    switch(type) {
+        case value_type::unknown: system_fault("unexpected unknown property type");
+        case value_type::size: break;
+        case value_type::integer: break;
+        case value_type::real: break;
+        case value_type::string: delete(value.string); break;
+        case value_type::plist: delete(value.plist); break;
+        case value_type::pmap: delete(value.pmap); break;
     }
 }
 
@@ -68,6 +58,8 @@ string_type generic::get()
         case value_type::integer: return std::to_string(value.integer);
         case value_type::real: return std::to_string(value.real);
         case value_type::string: return *value.string;
+        case value_type::plist: system_fault("can't convert plist to a string yet");
+        case value_type::pmap: system_fault("can't convert pmap to string yet");
     }
 
     system_fault("should never get out of switch statement");
@@ -81,6 +73,8 @@ void generic::set(const double& value_in)
         case value_type::integer: set_integer(value_in); return;
         case value_type::real: set_real(value_in); return;
         case value_type::string: system_fault("unsupported for string type");
+        case value_type::plist: system_fault("unsupported for plist type");
+        case value_type::pmap: system_fault("unsupported for pmap type");
     }
 
     system_fault("should never get out of switch statement");
@@ -96,6 +90,8 @@ void generic::set(const string_type& value_in)
         case value_type::integer: value.integer = std::atoi(c_str); return;
         case value_type::real: value.real = std::strtof(c_str, nullptr); return;
         case value_type::string: *value.string = value_in; return;
+        case value_type::plist: system_fault("unsupported for plist type");
+        case value_type::pmap: system_fault("unsupported for pmap type");
     }
 
     system_fault("should never get out of switch statement");
@@ -109,7 +105,11 @@ void generic::set(const YAML::Node& value_in)
         case value_type::integer: value.integer = value_in.as<integer_type>(); return;
         case value_type::real: value.real = value_in.as<real_type>(); return;
         case value_type::string: *value.string = value_in.as<string_type>(); return;
+        case value_type::plist: system_fault("can't set plist to YAML node yet");
+        case value_type::pmap: system_fault("can't set plist to YAML node yet");
     }
+
+    system_fault("should never get out of switch statement");
 }
 
 node::base * generic::get_parent()
