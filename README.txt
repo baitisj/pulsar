@@ -29,6 +29,11 @@ You'll need these packages to compile on Debian or Ubuntu
 You'll need these packages to use dev-config.yaml
 
   swh-plugins zam-plugins
+  
+You'll also need to configure and run the JACK audio daemon.
+*qjackctl* is optional but very helpful.
+
+  jackd2 qjackctl
 
 It is possible the version of ZamPlugins in your distro is too old
 to work at all. Also the quality of older plugins is not as good
